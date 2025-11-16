@@ -1,0 +1,1218 @@
+{
+    "blendMode": 1,
+    "constantDescriptor": [
+        {
+            "default": false,
+            "description": "Enable transparency",
+            "displayName": "Transparent",
+            "name": "MATERIAL_TRANSPARENT",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Add glossy clear coating layer",
+            "displayName": "Clear Coat",
+            "name": "MATERIAL_CLEAR_COAT",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Add fabric-like highlights",
+            "displayName": "Sheen",
+            "name": "MATERIAL_SHEEN",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Enable directional reflections",
+            "displayName": "Anisotropy",
+            "name": "MATERIAL_ANISOTROPY",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Enable bone animation",
+            "displayName": "Skinned",
+            "name": "VERTEX_SKINNED",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Project textures from three directions",
+            "displayName": "Triplanar Mapping",
+            "name": "MATERIAL_TRIPLANAR",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Disable texture sampling",
+            "displayName": "Untextured",
+            "name": "MATERIAL_UNTEXTURED",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Block decals on this material",
+            "displayName": "No Decals",
+            "name": "MATERIAL_NO_DECALS",
+            "type": "bool"
+        },
+        {
+            "default": false,
+            "description": "Create surface depth using height maps",
+            "displayName": "Parallax",
+            "name": "MATERIAL_PARALLAX",
+            "type": "bool"
+        }
+    ],
+    "inputDescriptor": [
+        {
+            "categories": ["Base", "Albedo"],
+            "default": [1, 1, 1],
+            "description": "Base color of the material",
+            "id": 0,
+            "name": "albedo",
+            "nativeType": "vec3",
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "color"
+        },
+        {
+            "categories": ["Base", "Albedo"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for base color",
+            "id": 1,
+            "name": "albedoTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Reflectivity"],
+            "default": 1,
+            "description": "Microscopic surface roughness (0 = smooth mirror, 1 = rough diffuse)",
+            "id": 2,
+            "name": "roughness",
+            "nativeType": "float",
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "float"
+        },
+        {
+            "categories": ["Base", "Reflectivity"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for surface roughness",
+            "id": 3,
+            "name": "roughnessTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Reflectivity"],
+            "default": 0,
+            "description": "Metallic appearance (0 = non-metallic/dielectric, 1 = metallic)",
+            "id": 4,
+            "name": "metallic",
+            "nativeType": "float",
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "float"
+        },
+        {
+            "categories": ["Base", "Reflectivity"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for metallic property",
+            "id": 5,
+            "name": "metallicTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Ambient Occlusion"],
+            "default": 1,
+            "description": "Intensity of ambient lighting on surface",
+            "id": 6,
+            "name": "ambientOcclusion",
+            "nativeType": "float",
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "float"
+        },
+        {
+            "categories": ["Base", "Ambient Occlusion"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for ambient occlusion",
+            "id": 7,
+            "name": "ambientOcclusionTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Emissive"],
+            "default": [0, 0, 0],
+            "description": "Light emitted by surface",
+            "id": 8,
+            "name": "emission",
+            "nativeType": "vec3",
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "color"
+        },
+        {
+            "categories": ["Base", "Emissive"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for emissive areas",
+            "id": 9,
+            "name": "emissionTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Emissive"],
+            "default": 1,
+            "description": "Multiplier for emission brightness",
+            "id": 10,
+            "name": "emissionIntensity",
+            "nativeType": "float",
+            "properties": {},
+            "type": "float"
+        },
+        {
+            "categories": ["Base", "Normals"],
+            "default": "e8945da2-23ca-4133-833d-ef063ad6348c",
+            "description": "Normal map for surface detail and bump mapping",
+            "id": 11,
+            "name": "normalTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Normals"],
+            "default": 0,
+            "description": "Green channel inversion for normal map format compatibility",
+            "id": 12,
+            "name": "flipNormalTextureGreenChannel",
+            "nativeType": "int32_t",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Base", "Normals"],
+            "default": 0,
+            "description": "Blue channel inversion for normal map format compatibility",
+            "id": 13,
+            "name": "flipNormalTextureBlueChannel",
+            "nativeType": "int32_t",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Base", "UVs"],
+            "default": [1, 1],
+            "description": "UV texture tiling scale",
+            "id": 14,
+            "name": "scale",
+            "nativeType": "vec2",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "vec2"
+        },
+        {
+            "categories": ["Base", "UVs"],
+            "default": [0, 0],
+            "description": "UV texture offset for positioning",
+            "id": 15,
+            "name": "offset",
+            "nativeType": "vec2",
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "vec2"
+        },
+        {
+            "categories": ["Base", "Opacity"],
+            "default": 1,
+            "description": "Opacity level for transparent materials",
+            "id": 16,
+            "name": "opacity",
+            "nativeType": "float",
+            "properties": {
+                "isHidden": true,
+                "isMandatory": false,
+                "spec": { "MATERIAL_TRANSPARENT": true }
+            },
+            "type": "float"
+        },
+        {
+            "categories": ["Base", "Opacity"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for transparency",
+            "id": 17,
+            "name": "opacityTexture",
+            "nativeType": "texture2d_ref",
+            "properties": {
+                "isHidden": true,
+                "isMandatory": false,
+                "spec": { "MATERIAL_TRANSPARENT": true, "MATERIAL_UNTEXTURED": false }
+            },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base", "Opacity"],
+            "default": 1,
+            "description": "Light refraction amount for transparent materials (1.5 for glass)",
+            "id": 18,
+            "name": "indexOfRefraction",
+            "nativeType": "float",
+            "properties": {
+                "isHidden": true,
+                "isMandatory": false,
+                "spec": { "MATERIAL_TRANSPARENT": true }
+            },
+            "type": "float"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 1,
+            "description": "Transition hardness between projection axes",
+            "id": 19,
+            "name": "sharpness",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "float"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": [0, 0, 0],
+            "description": "Texture rotation angle for each projection axis",
+            "id": 20,
+            "name": "rotationDeg",
+            "nativeType": "vec3",
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "vec3"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 0,
+            "description": "Blending mode for combining triplanar projections",
+            "id": 21,
+            "name": "triplanarBlendMode",
+            "nativeType": "int32_t",
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "int"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 0,
+            "description": "Parallax mapping toggle for triplanar projection",
+            "id": 22,
+            "name": "triplanarParallax",
+            "nativeType": "int32_t",
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 0,
+            "description": "Space mode for triplanar projection (world or local)",
+            "id": 23,
+            "name": "triplanarUseLocalSpace",
+            "nativeType": "int32_t",
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": "e8945da2-23ca-4133-833d-ef063ad6348c",
+            "description": "Normal map for clear coat layer",
+            "id": 24,
+            "name": "clearCoatNormalTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Roughness texture for clear coat layer",
+            "id": 25,
+            "name": "clearCoatRoughnessTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": 0,
+            "description": "Roughness of clear coat layer",
+            "id": 26,
+            "name": "clearCoatRoughness",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": 1,
+            "description": "Clear coat normal map tiling scale",
+            "id": 27,
+            "name": "clearCoatNormalTexScale",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "float"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": 0,
+            "description": "Strength of coating layer effect",
+            "id": 28,
+            "name": "clearCoatStrength",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Parallax"],
+            "default": 0.04,
+            "description": "Depth scale for parallax displacement effect",
+            "id": 29,
+            "name": "heightMapScale",
+            "nativeType": "float",
+            "properties": {
+                "spec": {
+                    "MATERIAL_PARALLAX": true,
+                    "MATERIAL_TRANSPARENT": false,
+                    "MATERIAL_UNTEXTURED": false
+                }
+            },
+            "type": "float"
+        },
+        {
+            "categories": ["Parallax"],
+            "default": "00000000-0000-0000-0000-000000000000",
+            "description": "Height map texture for parallax mapping",
+            "id": 30,
+            "name": "heightMapTexture",
+            "nativeType": "texture2d_ref",
+            "properties": {
+                "spec": {
+                    "MATERIAL_PARALLAX": true,
+                    "MATERIAL_TRANSPARENT": false,
+                    "MATERIAL_UNTEXTURED": false
+                }
+            },
+            "type": "texture"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": [1, 0.8, 1],
+            "description": "Color of fabric-like sheen reflection",
+            "id": 31,
+            "name": "sheenColor",
+            "nativeType": "vec3",
+            "properties": { "spec": { "MATERIAL_SHEEN": true } },
+            "type": "color"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": 0,
+            "description": "Strength of sheen color effect",
+            "id": 32,
+            "name": "sheenColorIntensity",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_SHEEN": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for sheen color",
+            "id": 33,
+            "name": "sheenColorTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_SHEEN": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": 1,
+            "description": "Roughness of sheen reflection layer",
+            "id": 34,
+            "name": "sheenRoughness",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_SHEEN": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for sheen roughness",
+            "id": 35,
+            "name": "sheenRoughnessTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_SHEEN": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Anisotropy"],
+            "default": 0,
+            "description": "Strength of directional reflection (for brushed metal)",
+            "id": 36,
+            "name": "anisotropyStrength",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_ANISOTROPY": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Anisotropy"],
+            "default": 0,
+            "description": "Rotation angle of anisotropic highlight direction",
+            "id": 37,
+            "name": "anisotropyRotation",
+            "nativeType": "float",
+            "properties": { "spec": { "MATERIAL_ANISOTROPY": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Anisotropy"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for anisotropic properties",
+            "id": 38,
+            "name": "anisotropyTexture",
+            "nativeType": "texture2d_ref",
+            "properties": { "spec": { "MATERIAL_ANISOTROPY": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        }
+    ],
+    "materialDescriptor": [
+        {
+            "categories": ["Base"],
+            "default": [1, 1, 1],
+            "description": "Base color of the material",
+            "id": 1,
+            "name": "albedo",
+            "nativeType": "vec3",
+            "offset": 0,
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "color"
+        },
+        {
+            "categories": ["Base"],
+            "default": [0, 0, 0],
+            "description": "Light emitted by surface",
+            "id": 2,
+            "name": "emission",
+            "nativeType": "vec3",
+            "offset": 16,
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "color"
+        },
+        {
+            "categories": ["Base"],
+            "default": 0,
+            "description": "Metallic appearance (0 = non-metallic/dielectric, 1 = metallic)",
+            "id": 3,
+            "name": "metallic",
+            "nativeType": "float",
+            "offset": 152,
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "float"
+        },
+        {
+            "categories": ["Base"],
+            "default": 1,
+            "description": "Microscopic surface roughness (0 = smooth mirror, 1 = rough diffuse)",
+            "id": 4,
+            "name": "roughness",
+            "nativeType": "float",
+            "offset": 172,
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "float"
+        },
+        {
+            "categories": ["Base"],
+            "default": 1,
+            "description": "Intensity of ambient lighting on surface",
+            "id": 5,
+            "name": "ambientOcclusion",
+            "nativeType": "float",
+            "offset": 84,
+            "properties": { "isHidden": false, "isMandatory": false },
+            "type": "float"
+        },
+        {
+            "categories": ["Base"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for base color",
+            "id": 6,
+            "name": "albedoTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 80,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for emissive areas",
+            "id": 7,
+            "name": "emissionTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 128,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for metallic property",
+            "id": 8,
+            "name": "metallicTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 156,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for surface roughness",
+            "id": 9,
+            "name": "roughnessTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 176,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for ambient occlusion",
+            "id": 10,
+            "name": "ambientOcclusionTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 88,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": "e8945da2-23ca-4133-833d-ef063ad6348c",
+            "description": "Normal map for surface detail and bump mapping",
+            "id": 11,
+            "name": "normalTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 160,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": 1,
+            "description": "Multiplier for emission brightness",
+            "id": 12,
+            "name": "emissionIntensity",
+            "nativeType": "float",
+            "offset": 124,
+            "properties": {},
+            "type": "float"
+        },
+        {
+            "categories": ["Base"],
+            "default": 1,
+            "description": "Opacity level for transparent materials",
+            "id": 13,
+            "name": "opacity",
+            "nativeType": "float",
+            "offset": 164,
+            "properties": {
+                "isHidden": true,
+                "isMandatory": false,
+                "spec": { "MATERIAL_TRANSPARENT": true }
+            },
+            "type": "float"
+        },
+        {
+            "categories": ["Base"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for transparency",
+            "id": 14,
+            "name": "opacityTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 168,
+            "properties": {
+                "isHidden": true,
+                "isMandatory": false,
+                "spec": { "MATERIAL_TRANSPARENT": true, "MATERIAL_UNTEXTURED": false }
+            },
+            "type": "texture"
+        },
+        {
+            "categories": ["Base"],
+            "default": 1,
+            "description": "Light refraction amount for transparent materials (1.5 for glass)",
+            "id": 0,
+            "name": "indexOfRefraction",
+            "nativeType": "float",
+            "offset": 148,
+            "properties": {
+                "isHidden": true,
+                "isMandatory": false,
+                "spec": { "MATERIAL_TRANSPARENT": true }
+            },
+            "type": "float"
+        },
+        {
+            "categories": ["Base"],
+            "default": [1, 1],
+            "description": "UV texture tiling scale",
+            "id": 15,
+            "name": "scale",
+            "nativeType": "vec2",
+            "offset": 72,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "vec2"
+        },
+        {
+            "categories": ["Base"],
+            "default": [0, 0],
+            "description": "UV texture offset for positioning",
+            "id": 16,
+            "name": "offset",
+            "nativeType": "vec2",
+            "offset": 64,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "vec2"
+        },
+        {
+            "categories": ["Base"],
+            "default": 0,
+            "description": "Green channel inversion for normal map format compatibility",
+            "id": 17,
+            "name": "flipNormalTextureGreenChannel",
+            "nativeType": "int32_t",
+            "offset": 136,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Base"],
+            "default": 0,
+            "description": "Blue channel inversion for normal map format compatibility",
+            "id": 18,
+            "name": "flipNormalTextureBlueChannel",
+            "nativeType": "int32_t",
+            "offset": 132,
+            "properties": { "spec": { "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 1,
+            "description": "Transition hardness between projection axes",
+            "id": 19,
+            "name": "sharpness",
+            "nativeType": "float",
+            "offset": 180,
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "float"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": [0, 0, 0],
+            "description": "Texture rotation angle for each projection axis",
+            "id": 20,
+            "name": "rotationDeg",
+            "nativeType": "vec3",
+            "offset": 32,
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "vec3"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 0,
+            "description": "Blending mode for combining triplanar projections",
+            "id": 21,
+            "name": "triplanarBlendMode",
+            "nativeType": "int32_t",
+            "offset": 200,
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "int"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 0,
+            "description": "Parallax mapping toggle for triplanar projection",
+            "id": 22,
+            "name": "triplanarParallax",
+            "nativeType": "int32_t",
+            "offset": 204,
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Triplanar"],
+            "default": 0,
+            "description": "Space mode for triplanar projection (world or local)",
+            "id": 23,
+            "name": "triplanarUseLocalSpace",
+            "nativeType": "int32_t",
+            "offset": 208,
+            "properties": { "spec": { "MATERIAL_TRIPLANAR": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "bool"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": "e8945da2-23ca-4133-833d-ef063ad6348c",
+            "description": "Normal map for clear coat layer",
+            "id": 24,
+            "name": "clearCoatNormalTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 108,
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Roughness texture for clear coat layer",
+            "id": 25,
+            "name": "clearCoatRoughnessTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 116,
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": 0,
+            "description": "Roughness of clear coat layer",
+            "id": 26,
+            "name": "clearCoatRoughness",
+            "nativeType": "float",
+            "offset": 112,
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": 1,
+            "description": "Clear coat normal map tiling scale",
+            "id": 27,
+            "name": "clearCoatNormalTexScale",
+            "nativeType": "float",
+            "offset": 104,
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "float"
+        },
+        {
+            "categories": ["Clear Coat"],
+            "default": 0,
+            "description": "Strength of coating layer effect",
+            "id": 28,
+            "name": "clearCoatStrength",
+            "nativeType": "float",
+            "offset": 120,
+            "properties": { "spec": { "MATERIAL_CLEAR_COAT": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Parallax"],
+            "default": 0.04,
+            "description": "Depth scale for parallax displacement effect",
+            "id": 34,
+            "name": "heightMapScale",
+            "nativeType": "float",
+            "offset": 140,
+            "properties": {
+                "spec": {
+                    "MATERIAL_PARALLAX": true,
+                    "MATERIAL_TRANSPARENT": false,
+                    "MATERIAL_UNTEXTURED": false
+                }
+            },
+            "type": "float"
+        },
+        {
+            "categories": ["Parallax"],
+            "default": "00000000-0000-0000-0000-000000000000",
+            "description": "Height map texture for parallax mapping",
+            "id": 35,
+            "name": "heightMapTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 144,
+            "properties": {
+                "spec": {
+                    "MATERIAL_PARALLAX": true,
+                    "MATERIAL_TRANSPARENT": false,
+                    "MATERIAL_UNTEXTURED": false
+                }
+            },
+            "type": "texture"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": [1, 0.8, 1],
+            "description": "Color of fabric-like sheen reflection",
+            "id": 36,
+            "name": "sheenColor",
+            "nativeType": "vec3",
+            "offset": 48,
+            "properties": { "spec": { "MATERIAL_SHEEN": true } },
+            "type": "color"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": 0,
+            "description": "Strength of sheen color effect",
+            "id": 37,
+            "name": "sheenColorIntensity",
+            "nativeType": "float",
+            "offset": 184,
+            "properties": { "spec": { "MATERIAL_SHEEN": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for sheen color",
+            "id": 38,
+            "name": "sheenColorTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 188,
+            "properties": { "spec": { "MATERIAL_SHEEN": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": 1,
+            "description": "Roughness of sheen reflection layer",
+            "id": 39,
+            "name": "sheenRoughness",
+            "nativeType": "float",
+            "offset": 192,
+            "properties": { "spec": { "MATERIAL_SHEEN": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Sheen"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for sheen roughness",
+            "id": 40,
+            "name": "sheenRoughnessTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 196,
+            "properties": { "spec": { "MATERIAL_SHEEN": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        },
+        {
+            "categories": ["Anisotropy"],
+            "default": 0,
+            "description": "Strength of directional reflection (for brushed metal)",
+            "id": 41,
+            "name": "anisotropyStrength",
+            "nativeType": "float",
+            "offset": 96,
+            "properties": { "spec": { "MATERIAL_ANISOTROPY": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Anisotropy"],
+            "default": 0,
+            "description": "Rotation angle of anisotropic highlight direction",
+            "id": 42,
+            "name": "anisotropyRotation",
+            "nativeType": "float",
+            "offset": 92,
+            "properties": { "spec": { "MATERIAL_ANISOTROPY": true } },
+            "type": "float"
+        },
+        {
+            "categories": ["Anisotropy"],
+            "default": "0f7983f4-4469-4d66-a355-93253108b311",
+            "description": "Texture map for anisotropic properties",
+            "id": 43,
+            "name": "anisotropyTexture",
+            "nativeType": "texture2d_ref",
+            "offset": 100,
+            "properties": { "spec": { "MATERIAL_ANISOTROPY": true, "MATERIAL_UNTEXTURED": false } },
+            "type": "texture"
+        }
+    ],
+    "moduleDescriptions": [
+        {
+            "bindings": [
+                "views",
+                "storage_images",
+                "nodes",
+                "bones",
+                "instance_indices",
+                "instances"
+            ],
+            "constants": { "VERTEX_SKINNED": [0, 0] },
+            "payloadOffset": 0,
+            "payloadSize": 27316,
+            "shaderStage": 1,
+            "usedBindings": 3407879
+        },
+        {
+            "bindings": [
+                "views",
+                "nodes",
+                "storage_images",
+                "materials",
+                "cubemaps",
+                "textures",
+                "lights",
+                "shadow_cascades",
+                "light_view_shadow_pairings",
+                "directional_light_indices",
+                "light_cluster_view_offsets_data",
+                "light_cluster_light_indices",
+                "light_cluster_tile_depth",
+                "textures3d",
+                "reflection_probes",
+                "decals",
+                "decal_shader_batches",
+                "decal_materials"
+            ],
+            "constants": {
+                "MATERIAL_ANISOTROPY": [3, 0],
+                "MATERIAL_CLEAR_COAT": [1, 0],
+                "MATERIAL_NO_DECALS": [6, 0],
+                "MATERIAL_PARALLAX": [7, 0],
+                "MATERIAL_SHEEN": [2, 0],
+                "MATERIAL_TRANSPARENT": [0, 0],
+                "MATERIAL_TRIPLANAR": [4, 0],
+                "MATERIAL_UNTEXTURED": [5, 0]
+            },
+            "payloadOffset": 27316,
+            "payloadSize": 278852,
+            "shaderStage": 16,
+            "usedBindings": 891208599537
+        }
+    ],
+    "name": "PBR Opaque Uber Material",
+    "nodeDataDescriptor": [
+        {
+            "default": 0,
+            "name": "__globals__.viewIndex",
+            "nativeType": "int32_t",
+            "offset": 156,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__globals__.irradianceMapIndex",
+            "nativeType": "int32_t",
+            "offset": 108,
+            "type": "int"
+        },
+        {
+            "default": [0, 0, 0, 0],
+            "name": "__globals__.ambientColorTop",
+            "nativeType": "vec4",
+            "offset": 16,
+            "type": "vec4"
+        },
+        {
+            "default": [0, 0, 0, 0],
+            "name": "__globals__.ambientColorBottom",
+            "nativeType": "vec4",
+            "offset": 0,
+            "type": "vec4"
+        },
+        {
+            "name": "__renderGraph__.ssao_rt",
+            "nativeType": "render_target_index",
+            "offset": 148,
+            "type": "render_target_index"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.flipNormals",
+            "nativeType": "int32_t",
+            "offset": 96,
+            "type": "bool"
+        },
+        {
+            "default": 1,
+            "name": "__renderGraph__.computeSpecular",
+            "nativeType": "float",
+            "offset": 80,
+            "type": "float"
+        },
+        {
+            "default": 1,
+            "name": "__renderGraph__.ambientIntensity",
+            "nativeType": "float",
+            "offset": 68,
+            "type": "float"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.useLightClustering",
+            "nativeType": "int32_t",
+            "offset": 152,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.reflectGradient",
+            "nativeType": "int32_t",
+            "offset": 124,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.reflectSkybox",
+            "nativeType": "int32_t",
+            "offset": 132,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.reflectAtmosphere",
+            "nativeType": "int32_t",
+            "offset": 120,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.reflectSSR",
+            "nativeType": "int32_t",
+            "offset": 136,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.reflectProbes",
+            "nativeType": "int32_t",
+            "offset": 128,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.backgroundBrightness",
+            "nativeType": "float",
+            "offset": 76,
+            "type": "float"
+        },
+        {
+            "default": 0,
+            "name": "__globals__.radianceMapIndex",
+            "nativeType": "int32_t",
+            "offset": 116,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__globals__.skyboxIndex",
+            "nativeType": "int32_t",
+            "offset": 144,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__globals__.frameNumber",
+            "nativeType": "int32_t",
+            "offset": 100,
+            "type": "int"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.perspectiveJitterScale",
+            "nativeType": "float",
+            "offset": 112,
+            "type": "float"
+        },
+        {
+            "default": [0, 0, 0, 0],
+            "name": "__globals__.sunData",
+            "nativeType": "vec4",
+            "offset": 48,
+            "type": "vec4"
+        },
+        {
+            "name": "__renderGraph__.decalInfluence_rt",
+            "nativeType": "render_target_index",
+            "offset": 92,
+            "type": "render_target_index"
+        },
+        {
+            "name": "__renderGraph__.decalAlbedoMetalness_rt",
+            "nativeType": "render_target_index",
+            "offset": 84,
+            "type": "render_target_index"
+        },
+        {
+            "name": "__renderGraph__.decalEmissionRoughness_rt",
+            "nativeType": "render_target_index",
+            "offset": 88,
+            "type": "render_target_index"
+        },
+        {
+            "default": 1,
+            "name": "__renderGraph__.indirectBackgroundBrightnessFactor",
+            "nativeType": "float",
+            "offset": 104,
+            "type": "float"
+        },
+        {
+            "default": 0,
+            "name": "__renderGraph__.skyboxHDRI",
+            "nativeType": "int32_t",
+            "offset": 140,
+            "type": "bool"
+        },
+        {
+            "default": [0, 0, 0, 0],
+            "name": "__globals__.skyboxOrientation",
+            "nativeType": "vec4",
+            "offset": 32,
+            "type": "vec4"
+        },
+        {
+            "default": true,
+            "name": "__renderGraph__.ambientBRDF",
+            "nativeType": "int32_t",
+            "offset": 64,
+            "type": "bool"
+        },
+        {
+            "default": true,
+            "name": "__renderGraph__.ambientSpecular",
+            "nativeType": "int32_t",
+            "offset": 72,
+            "type": "bool"
+        }
+    ],
+    "outputDescriptor": [],
+    "payloadSize": 306168,
+    "shaderStages": 17,
+    "ui": { "shaderType": 0 },
+    "uuid": "f2a549e5-4f72-4cef-a5ab-48873c209e0c",
+    "vertexAttributes": [
+        {
+            "binding": 0,
+            "name": "ls_position",
+            "nativeType": "vec3",
+            "semantic": 1,
+            "type": "vec3"
+        },
+        { "binding": 1, "name": "ls_normal", "nativeType": "vec3", "semantic": 2, "type": "vec3" },
+        { "binding": 2, "name": "tex_coord", "nativeType": "vec2", "semantic": 4, "type": "vec2" },
+        { "binding": 3, "name": "bone_ids", "nativeType": "ivec4", "semantic": 8, "type": "ivec4" },
+        {
+            "binding": 4,
+            "name": "bone_weights",
+            "nativeType": "vec4",
+            "semantic": 16,
+            "type": "vec4"
+        }
+    ],
+    "vertexDescriptor": [
+        { "binding": 0, "format": 106, "location": 0, "semantic": 1, "stride": 12 },
+        { "binding": 1, "format": 106, "location": 1, "semantic": 2, "stride": 12 },
+        { "binding": 2, "format": 103, "location": 2, "semantic": 4, "stride": 8 },
+        { "binding": 3, "format": 108, "location": 3, "semantic": 8, "stride": 16 },
+        { "binding": 4, "format": 109, "location": 4, "semantic": 16, "stride": 16 }
+    ]
+}
