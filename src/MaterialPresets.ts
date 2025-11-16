@@ -9,6 +9,29 @@ export interface MaterialPreset {
         emission?: [number, number, number];
         emissionIntensity?: number;
         opacity?: number;
+        // Clear Coat properties
+        clearCoatRoughness?: number;
+        clearCoatStrength?: number;
+        // Sheen properties
+        sheenColor?: [number, number, number];
+        sheenColorIntensity?: number;
+        sheenRoughness?: number;
+        // Anisotropy properties
+        anisotropyStrength?: number;
+        anisotropyRotation?: number;
+        // Other properties
+        [key: string]: number | [number, number, number] | [number, number] | undefined;
+    };
+    constants?: {
+        MATERIAL_TRANSPARENT?: boolean;
+        MATERIAL_CLEAR_COAT?: boolean;
+        MATERIAL_SHEEN?: boolean;
+        MATERIAL_ANISOTROPY?: boolean;
+        VERTEX_SKINNED?: boolean;
+        MATERIAL_TRIPLANAR?: boolean;
+        MATERIAL_UNTEXTURED?: boolean;
+        MATERIAL_NO_DECALS?: boolean;
+        MATERIAL_PARALLAX?: boolean;
     };
 }
 
@@ -82,6 +105,11 @@ export const materialPresets: MaterialPreset[] = [
             albedo: [0.91, 0.92, 0.92],
             roughness: 0.25,
             metallic: 1,
+            anisotropyStrength: 0.7,
+            anisotropyRotation: 0,
+        },
+        constants: {
+            MATERIAL_ANISOTROPY: true,
         },
     },
     {
@@ -292,6 +320,9 @@ export const materialPresets: MaterialPreset[] = [
             metallic: 0,
             opacity: 0.1,
         },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
+        },
     },
     {
         name: "Frosted Glass",
@@ -302,6 +333,9 @@ export const materialPresets: MaterialPreset[] = [
             roughness: 0.3,
             metallic: 0,
             opacity: 0.3,
+        },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
         },
     },
     {
@@ -314,6 +348,9 @@ export const materialPresets: MaterialPreset[] = [
             metallic: 0,
             opacity: 0.2,
         },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
+        },
     },
     {
         name: "Tinted Glass Green",
@@ -324,6 +361,9 @@ export const materialPresets: MaterialPreset[] = [
             roughness: 0.05,
             metallic: 0,
             opacity: 0.2,
+        },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
         },
     },
     {
@@ -336,6 +376,9 @@ export const materialPresets: MaterialPreset[] = [
             metallic: 0,
             opacity: 0.4,
         },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
+        },
     },
     {
         name: "Ice",
@@ -346,6 +389,9 @@ export const materialPresets: MaterialPreset[] = [
             roughness: 0.15,
             metallic: 0,
             opacity: 0.5,
+        },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
         },
     },
     {
@@ -358,6 +404,9 @@ export const materialPresets: MaterialPreset[] = [
             metallic: 0,
             opacity: 0.3,
         },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
+        },
     },
     {
         name: "Plastic Transparent",
@@ -369,17 +418,25 @@ export const materialPresets: MaterialPreset[] = [
             metallic: 0,
             opacity: 0.2,
         },
+        constants: {
+            MATERIAL_TRANSPARENT: true,
+        },
     },
 
     // Paint
     {
         name: "Paint Glossy White",
-        description: "High gloss white paint",
+        description: "High gloss white paint with clear coat",
         category: "Paint",
         properties: {
             albedo: [0.95, 0.95, 0.95],
             roughness: 0.1,
             metallic: 0,
+            clearCoatStrength: 1.0,
+            clearCoatRoughness: 0.05,
+        },
+        constants: {
+            MATERIAL_CLEAR_COAT: true,
         },
     },
     {
@@ -394,12 +451,17 @@ export const materialPresets: MaterialPreset[] = [
     },
     {
         name: "Paint Glossy Black",
-        description: "High gloss black paint",
+        description: "High gloss black paint with clear coat",
         category: "Paint",
         properties: {
             albedo: [0.05, 0.05, 0.05],
             roughness: 0.1,
             metallic: 0,
+            clearCoatStrength: 1.0,
+            clearCoatRoughness: 0.05,
+        },
+        constants: {
+            MATERIAL_CLEAR_COAT: true,
         },
     },
     {
@@ -414,12 +476,17 @@ export const materialPresets: MaterialPreset[] = [
     },
     {
         name: "Car Paint Red",
-        description: "Metallic car paint",
+        description: "Metallic car paint with clear coat",
         category: "Paint",
         properties: {
             albedo: [0.8, 0.1, 0.1],
             roughness: 0.15,
             metallic: 0.3,
+            clearCoatStrength: 1.0,
+            clearCoatRoughness: 0.03,
+        },
+        constants: {
+            MATERIAL_CLEAR_COAT: true,
         },
     },
 
@@ -482,6 +549,71 @@ export const materialPresets: MaterialPreset[] = [
             metallic: 0,
             emission: [1, 0.5, 0],
             emissionIntensity: 2,
+        },
+    },
+
+    // Fabric & Sheen Materials
+    {
+        name: "Velvet Red",
+        description: "Soft red velvet fabric",
+        category: "Natural",
+        properties: {
+            albedo: [0.6, 0.1, 0.1],
+            roughness: 0.9,
+            metallic: 0,
+            sheenColor: [1, 0.3, 0.3],
+            sheenColorIntensity: 0.8,
+            sheenRoughness: 0.4,
+        },
+        constants: {
+            MATERIAL_SHEEN: true,
+        },
+    },
+    {
+        name: "Velvet Blue",
+        description: "Soft blue velvet fabric",
+        category: "Natural",
+        properties: {
+            albedo: [0.1, 0.2, 0.5],
+            roughness: 0.9,
+            metallic: 0,
+            sheenColor: [0.3, 0.4, 1],
+            sheenColorIntensity: 0.8,
+            sheenRoughness: 0.4,
+        },
+        constants: {
+            MATERIAL_SHEEN: true,
+        },
+    },
+    {
+        name: "Satin White",
+        description: "Glossy white satin fabric",
+        category: "Natural",
+        properties: {
+            albedo: [0.9, 0.9, 0.9],
+            roughness: 0.4,
+            metallic: 0,
+            sheenColor: [1, 1, 1],
+            sheenColorIntensity: 0.6,
+            sheenRoughness: 0.2,
+        },
+        constants: {
+            MATERIAL_SHEEN: true,
+        },
+    },
+    {
+        name: "Brushed Steel",
+        description: "Directionally brushed steel",
+        category: "Metals",
+        properties: {
+            albedo: [0.7, 0.7, 0.7],
+            roughness: 0.35,
+            metallic: 1,
+            anisotropyStrength: 0.8,
+            anisotropyRotation: 0,
+        },
+        constants: {
+            MATERIAL_ANISOTROPY: true,
         },
     },
 ];

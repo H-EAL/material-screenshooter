@@ -6,6 +6,7 @@ interface MaterialEditorProps {
     entities: Array<{
         material?: {
             dataJSON: Record<string, unknown>;
+            constantsJSON?: Record<string, unknown>;
             shaderRef?: string;
         };
     }>;
@@ -27,8 +28,17 @@ interface InputDescriptor {
     };
 }
 
+interface ConstantDescriptor {
+    name: string;
+    displayName: string;
+    description: string;
+    default: boolean;
+    type: string;
+}
+
 export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps) {
     const [materialData, setMaterialData] = useState<Record<string, unknown>>({});
+    const [constants, setConstants] = useState<Record<string, boolean>>({});
     const [activeCategory, setActiveCategory] = useState<string>("Base");
     const [isTransparent, setIsTransparent] = useState(false);
 
@@ -36,20 +46,28 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
     const OPAQUE_SHADER = "f2a549e5-4f72-4cef-a5ab-48873c209e0c";
     const TRANSPARENT_SHADER = "a740058e-27a0-48e3-af37-70ae93cc0b67";
 
-    // Initialize material data from first entity and check transparency
+    // Initialize material data and constants from first entity
     useEffect(() => {
         if (entities.length === 0 || !entities[0]?.material?.dataJSON) return;
 
-        const firstEntityMaterial = entities[0].material.dataJSON;
+        const firstEntityMaterial = entities[0].material;
         const data: Record<string, unknown> = {};
         (materialSchema.inputDescriptor as InputDescriptor[]).forEach((input) => {
-            const value = firstEntityMaterial[input.name];
+            const value = firstEntityMaterial.dataJSON[input.name];
             data[input.name] = value !== undefined ? value : input.default;
         });
         setMaterialData(data);
 
+        // Initialize constants
+        const constantsData: Record<string, boolean> = {};
+        (materialSchema.constantDescriptor as ConstantDescriptor[]).forEach((constant) => {
+            const value = firstEntityMaterial.constantsJSON?.[constant.name];
+            constantsData[constant.name] = typeof value === "boolean" ? value : constant.default;
+        });
+        setConstants(constantsData);
+
         // Check if material is transparent
-        const shaderRef = entities[0].material?.shaderRef;
+        const shaderRef = firstEntityMaterial?.shaderRef;
         setIsTransparent(shaderRef === TRANSPARENT_SHADER);
     }, [entities, TRANSPARENT_SHADER]);
 
@@ -65,8 +83,27 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
         });
     }, [materialData, entities]);
 
+    // Update all entities' constants when constants change
+    useEffect(() => {
+        if (entities.length === 0) return;
+
+        entities.forEach((entity) => {
+            if (!entity?.material) return;
+            if (!entity.material.constantsJSON) {
+                entity.material.constantsJSON = {};
+            }
+            Object.entries(constants).forEach(([key, value]) => {
+                entity.material!.constantsJSON![key] = value;
+            });
+        });
+    }, [constants, entities]);
+
     const updateValue = (name: string, value: unknown) => {
         setMaterialData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const toggleConstant = (name: string) => {
+        setConstants((prev) => ({ ...prev, [name]: !prev[name] }));
     };
 
     const toggleTransparency = () => {
@@ -74,6 +111,9 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
 
         const newTransparent = !isTransparent;
         setIsTransparent(newTransparent);
+
+        // Update MATERIAL_TRANSPARENT constant
+        setConstants((prev) => ({ ...prev, MATERIAL_TRANSPARENT: newTransparent }));
 
         entities.forEach((entity) => {
             if (!entity?.material) return;
@@ -86,42 +126,43 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             const preset = materialPresets.find((p) => p.name === presetName);
             if (!preset) return;
 
-            const newData: Record<string, unknown> = {
-                albedo: preset.properties.albedo,
-                roughness: preset.properties.roughness,
-                metallic: preset.properties.metallic,
-                emission: preset.properties.emission || [0, 0, 0],
-                emissionIntensity: preset.properties.emissionIntensity || 0,
-            };
+            console.log("Applying preset:", presetName, "constants:", preset.constants);
 
-            // Add opacity if preset has it
-            if (preset.properties.opacity !== undefined) {
-                newData.opacity = preset.properties.opacity;
-            }
+            // Reset ALL properties to their default values first
+            const newData: Record<string, unknown> = {};
+            (materialSchema.inputDescriptor as InputDescriptor[]).forEach((input) => {
+                newData[input.name] = input.default;
+            });
 
-            setMaterialData((prev) => ({
-                ...prev,
-                ...newData,
-            }));
+            // Then apply preset properties (overriding defaults)
+            Object.entries(preset.properties).forEach(([key, value]) => {
+                newData[key] = value;
+            });
 
-            // Switch to transparent shader for Glass category presets
-            if (preset.category === "Glass" && !isTransparent) {
-                setIsTransparent(true);
-                entities.forEach((entity) => {
-                    if (!entity?.material) return;
-                    entity.material.shaderRef = TRANSPARENT_SHADER;
-                });
-            }
-            // Switch to opaque shader for non-Glass presets
-            else if (preset.category !== "Glass" && isTransparent) {
-                setIsTransparent(false);
-                entities.forEach((entity) => {
-                    if (!entity?.material) return;
-                    entity.material.shaderRef = OPAQUE_SHADER;
-                });
-            }
+            setMaterialData(newData);
+
+            // Apply constants from preset - always reset all constants
+            const newConstants: Record<string, boolean> = {};
+            (materialSchema.constantDescriptor as ConstantDescriptor[]).forEach((constant) => {
+                // Set to preset value if defined, otherwise false
+                newConstants[constant.name] =
+                    preset.constants?.[constant.name as keyof typeof preset.constants] ?? false;
+            });
+
+            console.log("Setting new constants:", newConstants);
+            setConstants(newConstants);
+
+            // Update transparency state and shader based on MATERIAL_TRANSPARENT constant
+            const shouldBeTransparent = newConstants.MATERIAL_TRANSPARENT ?? false;
+            setIsTransparent(shouldBeTransparent);
+            entities.forEach((entity) => {
+                if (!entity?.material) return;
+                entity.material.shaderRef = shouldBeTransparent
+                    ? TRANSPARENT_SHADER
+                    : OPAQUE_SHADER;
+            });
         },
-        [entities, isTransparent, TRANSPARENT_SHADER, OPAQUE_SHADER]
+        [entities, TRANSPARENT_SHADER, OPAQUE_SHADER]
     );
 
     // Apply preset when presetToApply prop changes
@@ -133,21 +174,13 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
 
     // Check if parameter should be shown based on spec conditions
     const shouldShowParameter = (input: InputDescriptor): boolean => {
-        //if (input.properties?.isHidden) return false;
-
         const spec = input.properties?.spec;
         if (!spec) return true;
 
-        // Check for transparency-related parameters
-        if (spec.MATERIAL_TRANSPARENT !== undefined) {
-            return spec.MATERIAL_TRANSPARENT === isTransparent;
-        }
-
-        // Check all spec conditions
-        return Object.entries(spec).every(() => {
-            // For now, we'll show all parameters regardless of constants
-            // In a full implementation, you'd check the material's constant values
-            return true;
+        // Check all spec conditions against current constants
+        return Object.entries(spec).every(([constantName, requiredValue]) => {
+            const currentValue = constants[constantName];
+            return currentValue === requiredValue;
         });
     };
 
@@ -228,7 +261,12 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             }
 
             case "float": {
-                const numValue = typeof value === "number" ? value : (typeof input.default === "number" ? input.default : 0);
+                const numValue =
+                    typeof value === "number"
+                        ? value
+                        : typeof input.default === "number"
+                        ? input.default
+                        : 0;
                 const max = input.name.includes("Intensity") ? 10 : 1;
                 return (
                     <div>
@@ -354,7 +392,12 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             }
 
             case "texture": {
-                const textureId = typeof value === "string" ? value : (typeof input.default === "string" ? input.default : "");
+                const textureId =
+                    typeof value === "string"
+                        ? value
+                        : typeof input.default === "string"
+                        ? input.default
+                        : "";
                 return (
                     <div>
                         <input
@@ -411,6 +454,30 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
                     >
                         {isTransparent ? "Transparent" : "Opaque"}
                     </button>
+                </div>
+            </div>
+
+            {/* Feature Flags */}
+            <div className="p-4 border-b border-white/20 shrink-0">
+                <h3 className="text-sm font-semibold mb-2 text-gray-300">Features</h3>
+                <div className="grid grid-cols-2 gap-2">
+                    {(materialSchema.constantDescriptor as ConstantDescriptor[]).map((constant) => (
+                        <button
+                            key={constant.name}
+                            onClick={() => toggleConstant(constant.name)}
+                            className={`px-2 py-1.5 rounded text-xs transition-colors text-left ${
+                                constants[constant.name]
+                                    ? "bg-green-600 hover:bg-green-700 text-white"
+                                    : "bg-gray-700 hover:bg-gray-600 text-gray-400"
+                            }`}
+                            title={constant.description}
+                        >
+                            <div className="font-semibold">{constant.displayName}</div>
+                            <div className="text-xs opacity-75 truncate">
+                                {constant.description}
+                            </div>
+                        </button>
+                    ))}
                 </div>
             </div>
 
