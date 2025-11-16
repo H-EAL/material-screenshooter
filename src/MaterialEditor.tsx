@@ -228,7 +228,7 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             }
 
             case "float": {
-                const numValue = typeof value === "number" ? value : input.default;
+                const numValue = typeof value === "number" ? value : (typeof input.default === "number" ? input.default : 0);
                 const max = input.name.includes("Intensity") ? 10 : 1;
                 return (
                     <div>
@@ -246,7 +246,8 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             }
 
             case "vec2": {
-                const [x, y] = Array.isArray(value) ? value : input.default;
+                const defaultVec2 = Array.isArray(input.default) ? input.default : [0, 0];
+                const [x, y] = Array.isArray(value) ? value : defaultVec2;
                 return (
                     <div className="grid grid-cols-2 gap-2">
                         <div>
@@ -279,7 +280,8 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
 
             case "vec3": {
                 if (input.nativeType === "vec3" && !input.type.includes("color")) {
-                    const [x, y, z] = Array.isArray(value) ? value : input.default;
+                    const defaultVec3 = Array.isArray(input.default) ? input.default : [0, 0, 0];
+                    const [x, y, z] = Array.isArray(value) ? value : defaultVec3;
                     return (
                         <div className="grid grid-cols-3 gap-2">
                             <div>
@@ -352,7 +354,7 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             }
 
             case "texture": {
-                const textureId = typeof value === "string" ? value : input.default;
+                const textureId = typeof value === "string" ? value : (typeof input.default === "string" ? input.default : "");
                 return (
                     <div>
                         <input
