@@ -432,8 +432,8 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
     }
 
     return (
-        <div className="bg-black/80 text-white rounded-lg shadow-lg backdrop-blur-sm h-full flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-white/20 shrink-0">
+        <div className="bg-black/90 text-white rounded-xl shadow-2xl backdrop-blur-sm h-full flex flex-col overflow-hidden border border-white/10">
+            <div className="p-5 border-b border-white/10 shrink-0">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-bold">Material Editor</h2>
@@ -445,52 +445,60 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
                     {/* Transparency Toggle */}
                     <button
                         onClick={toggleTransparency}
-                        className={`px-3 py-2 rounded text-sm font-semibold transition-colors ${
+                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                             isTransparent
-                                ? "bg-cyan-600 hover:bg-cyan-700 text-white"
-                                : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                                ? "bg-cyan-600 hover:bg-cyan-700 text-white shadow-lg shadow-cyan-600/50"
+                                : "bg-gray-800 hover:bg-gray-700 text-gray-300"
                         }`}
                         title={isTransparent ? "Switch to Opaque" : "Switch to Transparent"}
                     >
-                        {isTransparent ? "Transparent" : "Opaque"}
+                        {isTransparent ? "💎 Transparent" : "⚫ Opaque"}
                     </button>
                 </div>
             </div>
 
             {/* Feature Flags */}
-            <div className="p-4 border-b border-white/20 shrink-0">
-                <h3 className="text-sm font-semibold mb-2 text-gray-300">Features</h3>
-                <div className="grid grid-cols-2 gap-2">
-                    {(materialSchema.constantDescriptor as ConstantDescriptor[]).map((constant) => (
-                        <button
-                            key={constant.name}
-                            onClick={() => toggleConstant(constant.name)}
-                            className={`px-2 py-1.5 rounded text-xs transition-colors text-left ${
-                                constants[constant.name]
-                                    ? "bg-green-600 hover:bg-green-700 text-white"
-                                    : "bg-gray-700 hover:bg-gray-600 text-gray-400"
-                            }`}
-                            title={constant.description}
-                        >
-                            <div className="font-semibold">{constant.displayName}</div>
-                            <div className="text-xs opacity-75 truncate">
-                                {constant.description}
-                            </div>
-                        </button>
-                    ))}
-                </div>
+            <div className="p-4 border-b border-white/10 shrink-0">
+                <details className="group">
+                    <summary className="text-sm font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors flex items-center justify-between">
+                        <span>Material Features</span>
+                        <span className="text-xs text-gray-500 group-open:rotate-90 transition-transform">
+                            ▶
+                        </span>
+                    </summary>
+                    <div className="grid grid-cols-3 gap-1.5 mt-3">
+                        {(materialSchema.constantDescriptor as ConstantDescriptor[]).map(
+                            (constant) => (
+                                <button
+                                    key={constant.name}
+                                    onClick={() => toggleConstant(constant.name)}
+                                    className={`px-2 py-1.5 rounded text-[10px] transition-all text-center font-medium ${
+                                        constants[constant.name]
+                                            ? "bg-green-600 hover:bg-green-700 text-white"
+                                            : "bg-gray-800 hover:bg-gray-700 text-gray-400"
+                                    }`}
+                                    title={`${constant.displayName}: ${constant.description}`}
+                                >
+                                    {constant.displayName
+                                        .replace("Material ", "")
+                                        .replace("Vertex ", "")}
+                                </button>
+                            )
+                        )}
+                    </div>
+                </details>
             </div>
 
             {/* Category Tabs */}
-            <div className="flex gap-2 p-4 border-b border-white/20 flex-wrap shrink-0">
+            <div className="flex gap-2 p-4 border-b border-white/10 flex-wrap shrink-0">
                 {categories.map((category) => (
                     <button
                         key={category}
                         onClick={() => setActiveCategory(category)}
-                        className={`px-3 py-1 rounded text-sm transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                             activeCategory === category
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/50"
+                                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                         }`}
                     >
                         {category}
@@ -499,7 +507,7 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
             </div>
 
             {/* Parameters */}
-            <div className="p-4 overflow-y-auto flex-1 space-y-4">
+            <div className="p-5 overflow-y-auto flex-1 space-y-3">
                 {filteredInputs.length === 0 ? (
                     <p className="text-gray-400 text-sm">No parameters in this category</p>
                 ) : (
