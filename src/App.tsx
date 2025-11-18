@@ -1,18 +1,27 @@
 //------------------------------------------------------------------------------
-import { useEffect, useRef, useState } from "react";
-import { Livelink, Canvas, Viewport, useCameraEntity, useEntities } from "@3dverse/livelink-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+    Livelink,
+    Canvas,
+    Viewport,
+    useCameraEntity,
+    useEntity,
+    useEntities,
+} from "@3dverse/livelink-react";
 import { LoadingOverlay } from "@3dverse/livelink-react-ui";
 import { MaterialEditor } from "./MaterialEditor";
 import { PresetPanel } from "./PresetPanel";
 import { materialPresets } from "./MaterialPresets";
 import { environmentPresets, type EnvironmentPreset } from "./EnvironmentPresets";
+import materialSchema from "./assets/pbr_material_shader.schema.json";
 
 //------------------------------------------------------------------------------
 import "./App.css";
 
 //------------------------------------------------------------------------------
-const scene_id = "e9f02ff7-e16d-4921-8205-25256b6fdb25";
+const scene_id = "5e00acaf-d773-46fe-9050-c4710f7c3fdf";
 const token = "public_dDcRaI53doYz81OS";
+const CANVAS_SIZE = 800;
 
 //------------------------------------------------------------------------------
 function ConnectionError() {
@@ -44,6 +53,8 @@ export function App() {
             token={token}
             LoadingPanel={LoadingOverlay}
             ConnectionErrorPanel={ConnectionError}
+            isTransient={true}
+            autoJoinExisting={false}
         >
             <AppLayout />
         </Livelink>
@@ -53,7 +64,9 @@ export function App() {
 //------------------------------------------------------------------------------
 function AppLayout() {
     const { cameraEntity } = useCameraEntity();
-    const { entities } = useEntities({ mandatory_components: ["material"] }, ["material"]);
+    const { entity: materialEntity } = useEntity({ euid: "5eb77a7a-88dc-4d7c-889d-73b328a3ec29" }, [
+        "material",
+    ]);
     const { entities: envEntities } = useEntities({ mandatory_components: ["environment"] }, [
         "environment",
     ]);
@@ -64,12 +77,136 @@ function AppLayout() {
     const [selectedEnvironment, setSelectedEnvironment] = useState<string>(
         environmentPresets[0]?.name || ""
     );
+    const [customShaderUUID, setCustomShaderUUID] = useState<string>("");
+    const [orbitAngles, setOrbitAngles] = useState<{ theta: number; phi: number } | null>(null);
+    const [orbitDistance, setOrbitDistance] = useState<number | null>(null);
+    const [isAutoRotate, setIsAutoRotate] = useState(false);
+
+    // Memoize the entities array to prevent infinite re-renders
+    const materialEntities = useMemo(
+        () => (materialEntity ? [materialEntity] : []),
+        [materialEntity]
+    );
+
+    // Initialize orbit angles and distance from camera's starting position
+    useEffect(() => {
+        if (!cameraEntity || !cameraEntity.global_transform) return;
+        if (orbitAngles !== null) return; // Only initialize once
+
+        const pos = cameraEntity.global_transform.position;
+        const target = [0, 1, 0];
+
+        // Calculate distance from camera to target
+        const dx = pos[0] - target[0];
+        const dy = pos[1] - target[1];
+        const dz = pos[2] - target[2];
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        // Calculate spherical coordinates from Cartesian position
+        const theta = Math.atan2(dz, dx);
+        const phi = Math.acos(dy / distance);
+
+        setOrbitDistance(distance);
+        setOrbitAngles({ theta, phi });
+    }, [cameraEntity, orbitAngles]);
 
     useEffect(() => {
         if (!cameraEntity) return;
         if (cameraEntity.perspective_lens == null) return;
         cameraEntity.perspective_lens.fovy = 18;
     }, [cameraEntity]);
+
+    // Update camera position based on orbit angles
+    useEffect(() => {
+        if (!cameraEntity || orbitAngles === null || orbitDistance === null) return;
+
+        const target = [0, 1, 0];
+        const { theta, phi } = orbitAngles;
+
+        // Spherical to Cartesian conversion
+        const x = target[0] + orbitDistance * Math.sin(phi) * Math.cos(theta);
+        const y = target[1] + orbitDistance * Math.cos(phi);
+        const z = target[2] + orbitDistance * Math.sin(phi) * Math.sin(theta);
+
+        // Calculate direction vector (from camera to target)
+        const dirX = target[0] - x;
+        const dirY = target[1] - y;
+        const dirZ = target[2] - z;
+        const len = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        const dir = [dirX / len, dirY / len, dirZ / len];
+
+        // Calculate right vector (cross product of direction and up)
+        const up = [0, 1, 0];
+        const right = [
+            dir[1] * up[2] - dir[2] * up[1],
+            dir[2] * up[0] - dir[0] * up[2],
+            dir[0] * up[1] - dir[1] * up[0],
+        ];
+        const rightLen = Math.sqrt(right[0] * right[0] + right[1] * right[1] + right[2] * right[2]);
+        right[0] /= rightLen;
+        right[1] /= rightLen;
+        right[2] /= rightLen;
+
+        // Convert to quaternion (simplified - assumes camera looking along -Z axis)
+        const angle = Math.atan2(-dir[0], -dir[2]);
+        const pitch = Math.asin(dir[1]);
+
+        const cy = Math.cos(angle * 0.5);
+        const sy = Math.sin(angle * 0.5);
+        const cp = Math.cos(pitch * 0.5);
+        const sp = Math.sin(pitch * 0.5);
+
+        const qw = cy * cp;
+        const qx = cy * sp;
+        const qy = sy * cp;
+        const qz = -sy * sp;
+
+        // Update camera transform
+        if (cameraEntity.global_transform) {
+            cameraEntity.global_transform.position = [x, y, z];
+            cameraEntity.global_transform.orientation = [qx, qy, qz, qw];
+        }
+    }, [cameraEntity, orbitAngles, orbitDistance]);
+
+    // Auto-rotate effect
+    useEffect(() => {
+        if (!isAutoRotate || orbitAngles === null) return;
+
+        const intervalId = setInterval(() => {
+            setOrbitAngles((prev) => {
+                if (!prev) return prev;
+                let newTheta = prev.theta + 0.01;
+                // Wrap around between -PI and PI
+                if (newTheta > Math.PI) {
+                    newTheta = -Math.PI + (newTheta - Math.PI);
+                }
+                return {
+                    theta: newTheta,
+                    phi: prev.phi,
+                };
+            });
+        }, 16); // ~60fps
+
+        return () => clearInterval(intervalId);
+    }, [isAutoRotate, orbitAngles]);
+
+    // Slider handler for orbit control
+    const handleOrbitSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (orbitAngles === null) return;
+
+        const value = parseFloat(e.target.value);
+        setOrbitAngles((prev) => {
+            if (!prev) return prev;
+            return {
+                theta: value,
+                phi: prev.phi,
+            };
+        });
+    };
+
+    const handleToggleAutoRotate = () => {
+        setIsAutoRotate((prev) => !prev);
+    };
 
     const handleApplyPreset = (presetName: string) => {
         setSelectedPreset(presetName);
@@ -99,6 +236,65 @@ function AppLayout() {
         }
     };
 
+    const handleShaderUUIDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const uuid = e.target.value;
+        setCustomShaderUUID(uuid);
+    };
+
+    const handleApplyShaderUUID = () => {
+        const uuid = customShaderUUID.trim();
+
+        // Apply the shader UUID if valid and entity exists
+        if (uuid && materialEntity?.material) {
+            console.log("Applying shader UUID:", uuid);
+            materialEntity.material.shaderRef = uuid;
+        }
+    };
+
+    const handleShaderUUIDKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            handleApplyShaderUUID();
+        }
+    };
+
+    const handleResetMaterial = () => {
+        if (!materialEntity?.material) return;
+
+        // Reset to default values from schema
+        const defaultData: Record<string, unknown> = {};
+
+        interface InputDescriptor {
+            name: string;
+            default: number | string | number[] | boolean;
+        }
+
+        interface ConstantDescriptor {
+            name: string;
+            default: boolean;
+        }
+
+        // Set all inputs to their default values
+        (materialSchema.inputDescriptor as InputDescriptor[]).forEach((input) => {
+            defaultData[input.name] = input.default;
+        });
+
+        materialEntity.material.dataJSON = defaultData as typeof materialEntity.material.dataJSON;
+
+        // Reset constants to defaults
+        const defaultConstants: Record<string, boolean> = {};
+        (materialSchema.constantDescriptor as ConstantDescriptor[]).forEach((constant) => {
+            defaultConstants[constant.name] = constant.default;
+        });
+        materialEntity.material.constantsJSON =
+            defaultConstants as typeof materialEntity.material.constantsJSON;
+
+        // Reset to opaque shader
+        const OPAQUE_SHADER = "f2a549e5-4f72-4cef-a5ab-48873c209e0c";
+        materialEntity.material.shaderRef = OPAQUE_SHADER;
+
+        console.log("Material reset to default values");
+    };
+
     const handleScreenshot = () => {
         const canvasWrapper = canvasRef.current;
         if (!canvasWrapper) return;
@@ -107,13 +303,12 @@ function AppLayout() {
         const canvasElement = canvasWrapper.querySelector("canvas");
         if (!canvasElement) return;
 
-        // Get material properties from first entity
-        const entity = entities[0];
-        if (!entity?.material?.dataJSON) return;
+        // Get material properties from the entity
+        if (!materialEntity?.material?.dataJSON) return;
 
-        const albedo = entity.material.dataJSON.albedo as number[] | undefined;
-        const roughness = entity.material.dataJSON.roughness as number | undefined;
-        const metallic = entity.material.dataJSON.metallic as number | undefined;
+        const albedo = materialEntity.material.dataJSON.albedo as number[] | undefined;
+        const roughness = materialEntity.material.dataJSON.roughness as number | undefined;
+        const metallic = materialEntity.material.dataJSON.metallic as number | undefined;
 
         // Convert RGB values to hex
         const [r = 1, g = 0, b = 0] = albedo || [];
@@ -194,17 +389,18 @@ function AppLayout() {
                             }
 
                             // Get material properties for filename
-                            const entity = entities[0];
-                            if (!entity?.material?.dataJSON) {
+                            if (!materialEntity?.material?.dataJSON) {
                                 resolve();
                                 return;
                             }
 
-                            const albedo = entity.material.dataJSON.albedo as number[] | undefined;
-                            const roughness = entity.material.dataJSON.roughness as
+                            const albedo = materialEntity.material.dataJSON.albedo as
+                                | number[]
+                                | undefined;
+                            const roughness = materialEntity.material.dataJSON.roughness as
                                 | number
                                 | undefined;
-                            const metallic = entity.material.dataJSON.metallic as
+                            const metallic = materialEntity.material.dataJSON.metallic as
                                 | number
                                 | undefined;
 
@@ -293,6 +489,23 @@ function AppLayout() {
                                 </option>
                             ))}
                         </select>
+                        <label className="text-sm text-gray-400 ml-4">Shader UUID:</label>
+                        <input
+                            type="text"
+                            value={customShaderUUID}
+                            onChange={handleShaderUUIDChange}
+                            onBlur={handleApplyShaderUUID}
+                            onKeyDown={handleShaderUUIDKeyDown}
+                            placeholder="Enter shader UUID and press Enter"
+                            className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 hover:border-gray-600 focus:border-cyan-500 focus:outline-none transition-colors min-w-[300px] font-mono text-sm"
+                        />
+                        <button
+                            onClick={handleResetMaterial}
+                            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-all ml-4"
+                            title="Reset material dataJSON"
+                        >
+                            🔄 Reset Material
+                        </button>
                     </div>
                 </div>
             </div>
@@ -301,11 +514,14 @@ function AppLayout() {
             <div className="flex-1 flex items-center justify-center gap-8 p-8 overflow-hidden">
                 {/* Material Editor Panel */}
                 <div className="w-96 h-full max-h-[900px] overflow-hidden">
-                    {entities.length > 0 ? (
-                        <MaterialEditor entities={entities} presetToApply={selectedPreset} />
+                    {materialEntity ? (
+                        <MaterialEditor
+                            entities={materialEntities}
+                            presetToApply={selectedPreset}
+                        />
                     ) : (
                         <div className="bg-black/80 text-white p-4 rounded-lg">
-                            <p>Loading entities...</p>
+                            <p>Loading entity...</p>
                         </div>
                     )}
                 </div>
@@ -313,13 +529,42 @@ function AppLayout() {
                 {/* Canvas Container */}
                 <div className="flex flex-col gap-4 items-center">
                     <div className="relative shrink-0 rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10">
-                        <Canvas ref={canvasRef} width={800} height={800}>
+                        <Canvas ref={canvasRef} width={CANVAS_SIZE} height={CANVAS_SIZE}>
                             <Viewport
                                 cameraEntity={cameraEntity}
                                 className="w-full h-full"
                             ></Viewport>
                         </Canvas>
                     </div>
+
+                    {/* Camera Orbit Slider */}
+                    {orbitAngles !== null && (
+                        <div className="w-full max-w-md">
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="text-sm text-gray-400">Camera Rotation</label>
+                                <button
+                                    onClick={handleToggleAutoRotate}
+                                    className={`text-xs font-semibold py-1 px-3 rounded transition-all ${
+                                        isAutoRotate
+                                            ? "bg-green-600 hover:bg-green-700 text-white"
+                                            : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                                    }`}
+                                >
+                                    {isAutoRotate ? "🔄 Auto-Rotate ON" : "⏸ Auto-Rotate OFF"}
+                                </button>
+                            </div>
+                            <input
+                                type="range"
+                                min={-Math.PI}
+                                max={Math.PI}
+                                step={0.01}
+                                value={orbitAngles.theta}
+                                onChange={handleOrbitSliderChange}
+                                disabled={isAutoRotate}
+                                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider disabled:opacity-50 disabled:cursor-not-allowed"
+                            />
+                        </div>
+                    )}
 
                     {/* Action Buttons Below Canvas */}
                     <div className="flex gap-3">
