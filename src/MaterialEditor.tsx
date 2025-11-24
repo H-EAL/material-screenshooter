@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import materialSchema from "./assets/pbr_material_shader.schema.json";
 import { materialPresets } from "./MaterialPresets";
 
+interface TextureAsset {
+    asset_id: string;
+    name: string;
+}
+
 interface MaterialEditorProps {
     entities: Array<{
         material?: {
@@ -11,6 +16,7 @@ interface MaterialEditorProps {
         };
     }>;
     presetToApply?: string;
+    availableTextures?: TextureAsset[];
 }
 
 interface InputDescriptor {
@@ -36,7 +42,124 @@ interface ConstantDescriptor {
     type: string;
 }
 
-export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps) {
+// Filterable Texture Selector Component
+function TextureSelector({
+    textureId,
+    availableTextures,
+    onSelectTexture,
+}: {
+    textureId: string;
+    availableTextures: TextureAsset[];
+    onSelectTexture: (id: string) => void;
+}) {
+    const [filterText, setFilterText] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    // Filter textures based on search text
+    const filteredTextures = availableTextures.filter((texture) =>
+        texture.name.toLowerCase().includes(filterText.toLowerCase())
+    );
+
+    // Get the selected texture name for display
+    const selectedTexture = availableTextures.find((t) => t.asset_id === textureId);
+    const displayName =
+        textureId === "0f7983f4-4469-4d66-a355-93253108b311"
+            ? "White (default)"
+            : textureId === "e8945da2-23ca-4133-833d-ef063ad6348c"
+            ? "Normal (default)"
+            : selectedTexture?.name || textureId || "-- Select Texture --";
+
+    return (
+        <div className="relative">
+            {/* Search Input */}
+            <input
+                type="text"
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                onFocus={() => setIsDropdownOpen(true)}
+                placeholder={`Filter textures... (${displayName})`}
+                className="w-full bg-gray-700 text-white px-2 py-1 rounded text-sm border border-gray-600 focus:border-cyan-500 focus:outline-none"
+            />
+
+            {/* Dropdown List */}
+            {isDropdownOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded max-h-60 overflow-y-auto shadow-lg">
+                    <div
+                        className="px-2 py-1 hover:bg-gray-700 cursor-pointer text-sm"
+                        onClick={() => {
+                            onSelectTexture("");
+                            setIsDropdownOpen(false);
+                            setFilterText("");
+                        }}
+                    >
+                        -- Select Texture --
+                    </div>
+                    <div
+                        className="px-2 py-1 hover:bg-gray-700 cursor-pointer text-sm"
+                        onClick={() => {
+                            onSelectTexture("0f7983f4-4469-4d66-a355-93253108b311");
+                            setIsDropdownOpen(false);
+                            setFilterText("");
+                        }}
+                    >
+                        White (default)
+                    </div>
+                    <div
+                        className="px-2 py-1 hover:bg-gray-700 cursor-pointer text-sm"
+                        onClick={() => {
+                            onSelectTexture("e8945da2-23ca-4133-833d-ef063ad6348c");
+                            setIsDropdownOpen(false);
+                            setFilterText("");
+                        }}
+                    >
+                        Normal (default)
+                    </div>
+                    <div className="border-t border-gray-700"></div>
+                    {filteredTextures.length === 0 ? (
+                        <div className="px-2 py-2 text-sm text-gray-400 italic">
+                            No textures match "{filterText}"
+                        </div>
+                    ) : (
+                        filteredTextures.map((texture) => (
+                            <div
+                                key={texture.asset_id}
+                                className={`px-2 py-1 hover:bg-gray-700 cursor-pointer text-sm ${
+                                    texture.asset_id === textureId ? "bg-gray-700" : ""
+                                }`}
+                                onClick={() => {
+                                    onSelectTexture(texture.asset_id);
+                                    setIsDropdownOpen(false);
+                                    setFilterText("");
+                                }}
+                            >
+                                {texture.name}
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
+
+            {/* Close dropdown when clicking outside */}
+            {isDropdownOpen && (
+                <div
+                    className="fixed inset-0 z-0"
+                    onClick={() => {
+                        setIsDropdownOpen(false);
+                        setFilterText("");
+                    }}
+                ></div>
+            )}
+
+            <p className="text-xs text-gray-400 mt-1">{availableTextures.length} textures loaded</p>
+        </div>
+    );
+}
+
+export function MaterialEditor({
+    entities,
+    presetToApply,
+    availableTextures = [],
+}: MaterialEditorProps) {
     const [materialData, setMaterialData] = useState<Record<string, unknown>>({});
     const [constants, setConstants] = useState<Record<string, boolean>>({});
     const [activeCategory, setActiveCategory] = useState<string>("Base");
@@ -398,6 +521,19 @@ export function MaterialEditor({ entities, presetToApply }: MaterialEditorProps)
                         : typeof input.default === "string"
                         ? input.default
                         : "";
+
+                // If textures are available, show filterable dropdown, otherwise show text input
+                if (availableTextures.length > 0) {
+                    return (
+                        <TextureSelector
+                            textureId={textureId}
+                            availableTextures={availableTextures}
+                            onSelectTexture={(id) => updateValue(input.name, id)}
+                        />
+                    );
+                }
+
+                // Fallback to text input if no textures loaded
                 return (
                     <div>
                         <input

@@ -14,6 +14,7 @@ import { PresetPanel } from "./PresetPanel";
 import { materialPresets } from "./MaterialPresets";
 import { environmentPresets, type EnvironmentPreset } from "./EnvironmentPresets";
 import materialSchema from "./assets/pbr_material_shader.schema.json";
+import { setApiKey, listAssets, type ListAssets_Object } from "@3dverse/api";
 
 //------------------------------------------------------------------------------
 import "./App.css";
@@ -81,6 +82,9 @@ function AppLayout() {
     const [orbitAngles, setOrbitAngles] = useState<{ theta: number; phi: number } | null>(null);
     const [orbitDistance, setOrbitDistance] = useState<number | null>(null);
     const [isAutoRotate, setIsAutoRotate] = useState(false);
+    const [apiKey, setApiKeyState] = useState<string>("");
+    const [availableTextures, setAvailableTextures] = useState<ListAssets_Object[]>([]);
+    const [isLoadingTextures, setIsLoadingTextures] = useState(false);
 
     // Memoize the entities array to prevent infinite re-renders
     const materialEntities = useMemo(
@@ -206,6 +210,41 @@ function AppLayout() {
 
     const handleToggleAutoRotate = () => {
         setIsAutoRotate((prev) => !prev);
+    };
+
+    const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setApiKeyState(e.target.value);
+    };
+
+    const handleFetchTextures = async () => {
+        if (!apiKey.trim()) {
+            alert("Please enter an API key");
+            return;
+        }
+
+        setIsLoadingTextures(true);
+        try {
+            // Set the API key for the @3dverse/api library
+            setApiKey(apiKey);
+
+            // Fetch textures from the API
+            const response = await listAssets({
+                offset: 0,
+                limit: 1000,
+                filter: {
+                    asset_type: "texture",
+                },
+            });
+
+            const textures = response.data.textures || [];
+            setAvailableTextures(textures);
+            console.log(`Loaded ${textures.length} textures`);
+        } catch (error) {
+            console.error("Failed to fetch textures:", error);
+            alert("Failed to fetch textures. Please check your API key.");
+        } finally {
+            setIsLoadingTextures(false);
+        }
     };
 
     const handleApplyPreset = (presetName: string) => {
@@ -506,6 +545,22 @@ function AppLayout() {
                         >
                             🔄 Reset Material
                         </button>
+                        <label className="text-sm text-gray-400 ml-4">API Key:</label>
+                        <input
+                            type="password"
+                            value={apiKey}
+                            onChange={handleApiKeyChange}
+                            placeholder="Enter API key"
+                            className="bg-gray-800 text-white px-4 py-2 rounded-lg border border-gray-700 hover:border-gray-600 focus:border-cyan-500 focus:outline-none transition-colors min-w-[200px] font-mono text-sm"
+                        />
+                        <button
+                            onClick={handleFetchTextures}
+                            disabled={isLoadingTextures || !apiKey.trim()}
+                            className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                            title="Load textures from project"
+                        >
+                            {isLoadingTextures ? "⏳ Loading..." : "📦 Load Textures"}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -518,6 +573,7 @@ function AppLayout() {
                         <MaterialEditor
                             entities={materialEntities}
                             presetToApply={selectedPreset}
+                            availableTextures={availableTextures}
                         />
                     ) : (
                         <div className="bg-black/80 text-white p-4 rounded-lg">
