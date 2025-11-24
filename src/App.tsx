@@ -82,7 +82,7 @@ function AppLayout() {
     const [orbitAngles, setOrbitAngles] = useState<{ theta: number; phi: number } | null>(null);
     const [orbitDistance, setOrbitDistance] = useState<number | null>(null);
     const [isAutoRotate, setIsAutoRotate] = useState(false);
-    const [apiKey, setApiKeyState] = useState<string>("");
+    const [apiKey, setApiKeyState] = useState<string>(import.meta.env.VITE_API_KEY || "");
     const [availableTextures, setAvailableTextures] = useState<ListAssets_Object[]>([]);
     const [isLoadingTextures, setIsLoadingTextures] = useState(false);
 
