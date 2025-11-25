@@ -72,6 +72,9 @@ function AppLayout() {
         "environment",
     ]);
     const canvasRef = useRef<HTMLDivElement>(null);
+    const canvasContainerRef = useRef<HTMLDivElement>(null);
+    const isDraggingRef = useRef(false);
+    const lastMousePosRef = useRef<{ x: number; y: number } | null>(null);
     const [selectedPreset, setSelectedPreset] = useState<string | undefined>(undefined);
     const [isBatchProcessing, setIsBatchProcessing] = useState(false);
     const [batchProgress, setBatchProgress] = useState<string>("");
@@ -82,9 +85,14 @@ function AppLayout() {
     const [orbitAngles, setOrbitAngles] = useState<{ theta: number; phi: number } | null>(null);
     const [orbitDistance, setOrbitDistance] = useState<number | null>(null);
     const [isAutoRotate, setIsAutoRotate] = useState(false);
+    const [zoomFactor, setZoomFactor] = useState<number>(18); // Default FOV
     const [apiKey, setApiKeyState] = useState<string>(import.meta.env.VITE_API_KEY || "");
     const [availableTextures, setAvailableTextures] = useState<ListAssets_Object[]>([]);
     const [isLoadingTextures, setIsLoadingTextures] = useState(false);
+    const [initialCameraTransform, setInitialCameraTransform] = useState<{
+        position: [number, number, number];
+        orientation: [number, number, number, number];
+    } | null>(null);
 
     // Memoize the entities array to prevent infinite re-renders
     const materialEntities = useMemo(
@@ -98,6 +106,7 @@ function AppLayout() {
         if (orbitAngles !== null) return; // Only initialize once
 
         const pos = cameraEntity.global_transform.position;
+        const orient = cameraEntity.global_transform.orientation;
         const target = [0, 1, 0];
 
         // Calculate distance from camera to target
@@ -110,6 +119,11 @@ function AppLayout() {
         const theta = Math.atan2(dz, dx);
         const phi = Math.acos(dy / distance);
 
+        // Store initial camera transform and set orbit angles together
+        setInitialCameraTransform({
+            position: [pos[0], pos[1], pos[2]],
+            orientation: [orient[0], orient[1], orient[2], orient[3]],
+        });
         setOrbitDistance(distance);
         setOrbitAngles({ theta, phi });
     }, [cameraEntity, orbitAngles]);
@@ -117,8 +131,8 @@ function AppLayout() {
     useEffect(() => {
         if (!cameraEntity) return;
         if (cameraEntity.perspective_lens == null) return;
-        cameraEntity.perspective_lens.fovy = 18;
-    }, [cameraEntity]);
+        cameraEntity.perspective_lens.fovy = zoomFactor;
+    }, [cameraEntity, zoomFactor]);
 
     // Update camera position based on orbit angles
     useEffect(() => {
@@ -194,6 +208,28 @@ function AppLayout() {
         return () => clearInterval(intervalId);
     }, [isAutoRotate, orbitAngles]);
 
+    // Attach wheel event listener with non-passive option
+    useEffect(() => {
+        const container = canvasContainerRef.current;
+        if (!container) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            e.preventDefault();
+
+            setZoomFactor((prev) => {
+                const delta = e.deltaY > 0 ? 2 : -2; // Zoom in/out
+                const newZoom = prev + delta;
+                return Math.max(5, Math.min(40, newZoom)); // Clamp between 5 and 40
+            });
+        };
+
+        container.addEventListener("wheel", handleWheel, { passive: false });
+
+        return () => {
+            container.removeEventListener("wheel", handleWheel);
+        };
+    }, []);
+
     // Slider handler for orbit control
     const handleOrbitSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (orbitAngles === null) return;
@@ -210,6 +246,71 @@ function AppLayout() {
 
     const handleToggleAutoRotate = () => {
         setIsAutoRotate((prev) => !prev);
+    };
+
+    const handleResetCamera = () => {
+        if (!cameraEntity || !initialCameraTransform) return;
+
+        // Recalculate orbit angles from the initial position
+        const pos = initialCameraTransform.position;
+        const target = [0, 1, 0];
+
+        const dx = pos[0] - target[0];
+        const dy = pos[1] - target[1];
+        const dz = pos[2] - target[2];
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+        const theta = Math.atan2(dz, dx);
+        const phi = Math.acos(dy / distance);
+
+        // Update orbit state which will trigger camera position update
+        setOrbitDistance(distance);
+        setOrbitAngles({ theta, phi });
+        setIsAutoRotate(false);
+        setZoomFactor(18); // Reset zoom to default
+    };
+
+    const handleZoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setZoomFactor(parseFloat(e.target.value));
+    };
+
+    // Mouse controls for camera
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.button === 0) {
+            // Left button
+            isDraggingRef.current = true;
+            lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+            setIsAutoRotate(false); // Stop auto-rotate when user interacts
+        }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDraggingRef.current || !lastMousePosRef.current || orbitAngles === null) return;
+
+        const deltaX = e.clientX - lastMousePosRef.current.x;
+
+        lastMousePosRef.current = { x: e.clientX, y: e.clientY };
+
+        // Update orbit angles based on mouse movement - only horizontal rotation around up axis
+        setOrbitAngles((prev) => {
+            if (!prev) return prev;
+
+            let newTheta = prev.theta + deltaX * 0.01; // Horizontal rotation only (inverted)
+
+            // Wrap theta between -PI and PI
+            if (newTheta > Math.PI) {
+                newTheta = -Math.PI + (newTheta - Math.PI);
+            } else if (newTheta < -Math.PI) {
+                newTheta = Math.PI + (newTheta + Math.PI);
+            }
+
+            return { theta: newTheta, phi: prev.phi }; // Keep phi unchanged
+        });
+    };
+
+    const handleMouseUp = () => {
+        isDraggingRef.current = false;
+        lastMousePosRef.current = null;
     };
 
     const handleApiKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -584,7 +685,14 @@ function AppLayout() {
 
                 {/* Canvas Container */}
                 <div className="flex flex-col gap-4 items-center">
-                    <div className="relative shrink-0 rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10">
+                    <div
+                        ref={canvasContainerRef}
+                        className="relative shrink-0 rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10 cursor-grab active:cursor-grabbing"
+                        onMouseDown={handleMouseDown}
+                        onMouseMove={handleMouseMove}
+                        onMouseUp={handleMouseUp}
+                        onMouseLeave={handleMouseUp}
+                    >
                         <Canvas ref={canvasRef} width={CANVAS_SIZE} height={CANVAS_SIZE}>
                             <Viewport
                                 cameraEntity={cameraEntity}
@@ -598,16 +706,25 @@ function AppLayout() {
                         <div className="w-full max-w-md">
                             <div className="flex items-center justify-between mb-2">
                                 <label className="text-sm text-gray-400">Camera Rotation</label>
-                                <button
-                                    onClick={handleToggleAutoRotate}
-                                    className={`text-xs font-semibold py-1 px-3 rounded transition-all ${
-                                        isAutoRotate
-                                            ? "bg-green-600 hover:bg-green-700 text-white"
-                                            : "bg-gray-700 hover:bg-gray-600 text-gray-300"
-                                    }`}
-                                >
-                                    {isAutoRotate ? "🔄 Auto-Rotate ON" : "⏸ Auto-Rotate OFF"}
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={handleResetCamera}
+                                        className="text-xs font-semibold py-1 px-3 rounded transition-all bg-gray-700 hover:bg-gray-600 text-gray-300"
+                                        title="Reset camera to original position"
+                                    >
+                                        🔄 Reset
+                                    </button>
+                                    <button
+                                        onClick={handleToggleAutoRotate}
+                                        className={`text-xs font-semibold py-1 px-3 rounded transition-all ${
+                                            isAutoRotate
+                                                ? "bg-green-600 hover:bg-green-700 text-white"
+                                                : "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                                        }`}
+                                    >
+                                        {isAutoRotate ? "🔄 Auto-Rotate ON" : "⏸ Auto-Rotate OFF"}
+                                    </button>
+                                </div>
                             </div>
                             <input
                                 type="range"
@@ -621,6 +738,23 @@ function AppLayout() {
                             />
                         </div>
                     )}
+
+                    {/* Zoom Control */}
+                    <div className="w-full max-w-md">
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm text-gray-400">Zoom (FOV)</label>
+                            <span className="text-xs text-gray-500">{zoomFactor.toFixed(1)}°</span>
+                        </div>
+                        <input
+                            type="range"
+                            min={5}
+                            max={40}
+                            step={0.5}
+                            value={zoomFactor}
+                            onChange={handleZoomChange}
+                            className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                    </div>
 
                     {/* Action Buttons Below Canvas */}
                     <div className="flex gap-3">

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import materialSchema from "./assets/pbr_material_shader.schema.json";
 import { materialPresets } from "./MaterialPresets";
-import { getAssetThumbnail } from "@3dverse/api";
 
 interface TextureAsset {
     asset_id: string;
@@ -55,7 +54,8 @@ function TextureSelector({
 }) {
     const [filterText, setFilterText] = useState("");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [thumbnailUrls, setThumbnailUrls] = useState<Map<string, string>>(new Map());
+    // Thumbnails disabled until API supports authentication
+    // const [thumbnailUrls, setThumbnailUrls] = useState<Map<string, string>>(new Map());
 
     // Filter textures based on search text
     const filteredTextures = availableTextures.filter((texture) =>
@@ -71,67 +71,60 @@ function TextureSelector({
             ? "Normal (default)"
             : selectedTexture?.name || textureId || "-- Select Texture --";
 
-    // Load thumbnails for visible textures
-    useEffect(() => {
-        const loadThumbnails = async () => {
-            const texturesToLoad = isDropdownOpen
-                ? filteredTextures
-                : selectedTexture
-                ? [selectedTexture]
-                : [];
+    // Load thumbnails for visible textures - DISABLED: API doesn't support authentication yet
+    // useEffect(() => {
+    //     const loadThumbnails = async () => {
+    //         const texturesToLoad = isDropdownOpen
+    //             ? filteredTextures
+    //             : selectedTexture
+    //             ? [selectedTexture]
+    //             : [];
 
-            for (const texture of texturesToLoad) {
-                if (thumbnailUrls.has(texture.asset_id)) continue;
+    //         for (const texture of texturesToLoad) {
+    //             if (thumbnailUrls.has(texture.asset_id)) continue;
 
-                try {
-                    const response = await getAssetThumbnail({
-                        asset_container: "textures",
-                        asset_id: texture.asset_id,
-                        size: "small",
-                    });
+    //             try {
+    //                 const response = await getAssetThumbnail({
+    //                     asset_container: "textures",
+    //                     asset_id: texture.asset_id,
+    //                     size: "small",
+    //                 });
 
-                    // Convert ArrayBuffer to blob URL
-                    const blob = new Blob([response.data as ArrayBuffer], { type: "image/jpeg" });
-                    const url = URL.createObjectURL(blob);
+    //                 // Convert ArrayBuffer to blob URL
+    //                 const blob = new Blob([response.data as ArrayBuffer], { type: "image/jpeg" });
+    //                 const url = URL.createObjectURL(blob);
 
-                    setThumbnailUrls((prev) => new Map(prev).set(texture.asset_id, url));
-                } catch (error) {
-                    console.error(`Failed to load thumbnail for ${texture.asset_id}:`, error);
-                }
-            }
-        };
+    //                 setThumbnailUrls((prev) => new Map(prev).set(texture.asset_id, url));
+    //             } catch (error) {
+    //                 console.error(`Failed to load thumbnail for ${texture.asset_id}:`, error);
+    //             }
+    //         }
+    //     };
 
-        loadThumbnails();
-    }, [isDropdownOpen, filteredTextures, selectedTexture, thumbnailUrls]);
+    //     loadThumbnails();
+    // }, [isDropdownOpen, filteredTextures, selectedTexture, thumbnailUrls]);
 
-    // Cleanup blob URLs on unmount
-    useEffect(() => {
-        const urls = thumbnailUrls;
-        return () => {
-            urls.forEach((url) => URL.revokeObjectURL(url));
-        };
-    }, [thumbnailUrls]);
+    // Cleanup blob URLs on unmount - DISABLED until API supports thumbnails
+    // useEffect(() => {
+    //     const urls = thumbnailUrls;
+    //     return () => {
+    //         urls.forEach((url) => URL.revokeObjectURL(url));
+    //     };
+    // }, [thumbnailUrls]);
 
-    const getThumbnailUrl = (assetId: string) => {
-        return (
-            thumbnailUrls.get(assetId) ||
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect fill='%23444' width='32' height='32'/%3E%3C/svg%3E"
-        );
-    };
+    // Thumbnails disabled - API doesn't support authentication yet
+    // const getThumbnailUrl = (assetId: string) => {
+    //     return (
+    //         thumbnailUrls.get(assetId) ||
+    //         "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect fill='%23444' width='32' height='32'/%3E%3C/svg%3E"
+    //     );
+    // };
 
     return (
         <div className="relative">
-            {/* Search Input with Thumbnail */}
+            {/* Search Input */}
             <div className="flex items-center gap-2">
-                {textureId &&
-                    textureId !== "0f7983f4-4469-4d66-a355-93253108b311" &&
-                    textureId !== "e8945da2-23ca-4133-833d-ef063ad6348c" && (
-                        <img
-                            src={getThumbnailUrl(textureId)}
-                            alt="Selected texture"
-                            className="w-8 h-8 rounded border border-gray-600 object-cover"
-                        />
-                    )}
+                {/* Thumbnails disabled for now */}
                 <input
                     type="text"
                     value={filterText}
@@ -184,7 +177,7 @@ function TextureSelector({
                         filteredTextures.map((texture) => (
                             <div
                                 key={texture.asset_id}
-                                className={`flex items-center gap-2 px-2 py-1 hover:bg-gray-700 cursor-pointer text-sm ${
+                                className={`px-2 py-1 hover:bg-gray-700 cursor-pointer text-sm ${
                                     texture.asset_id === textureId ? "bg-gray-700" : ""
                                 }`}
                                 onClick={() => {
@@ -193,11 +186,6 @@ function TextureSelector({
                                     setFilterText("");
                                 }}
                             >
-                                <img
-                                    src={getThumbnailUrl(texture.asset_id)}
-                                    alt={texture.name}
-                                    className="w-8 h-8 rounded border border-gray-600 object-cover shrink-0"
-                                />
                                 <span className="truncate">{texture.name}</span>
                             </div>
                         ))
